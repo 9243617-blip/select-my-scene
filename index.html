@@ -41,7 +41,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 .director{font-size:12px;color:#aaa;margin-top:1px;min-height:16px}
 .stars{display:flex;gap:3px;margin-top:2px}
 .star{border:0;background:none;padding:0;color:#555;font-size:15px;line-height:1;cursor:pointer}
-.star.active{color:#f5c542}
+.star{color:transparent;background-image:linear-gradient(90deg,#f5c542 var(--fill,0%),#555 var(--fill,0%));background-clip:text;-webkit-background-clip:text}
 .scenes{margin-top:6px;display:flex;flex-direction:column;gap:5px;max-width:470px}
 .scene-row{display:flex;align-items:flex-start;gap:0}
 .scene-bullet{color:#ddd;font-size:12px;line-height:23px;flex:none}
@@ -91,7 +91,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 
 /* Compact, predictable export composition */
 #capture-export{box-sizing:border-box!important}
-#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 178px;gap:22px;margin-top:17px}
+#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 170px;gap:16px;margin-top:17px}
 #capture-export .profile{padding:10px 0 8px 18px}
 #capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:10px 0 11px;min-height:0;align-items:start}
 #capture-export .poster{width:70px;height:105px}
@@ -194,7 +194,7 @@ function render(){
      <span class="search-icon">⌕</span><div class="results" hidden></div>
     </div>
     ${movie?`<div class="movie-line"><span class="movie-title">${esc(movie.title)}</span><span class="year">${esc(movie.year)}</span></div><div class="director">${esc(movie.director||'')}</div>`:''}
-    <div class="stars">${[1,2,3,4,5].map(n=>`<button class="star ${f.rating>=n?'active':''}" data-star="${n}" aria-label="${n}점">★</button>`).join('')}</div>
+    <div class="stars">${[1,2,3,4,5].map(n=>`<button class="star" style="--fill:${Math.max(0,Math.min(1,f.rating-(n-1)))*100}%" data-star="${n}" aria-label="${n-0.5}점 또는 ${n}점" title="왼쪽: ${n-0.5}점 / 오른쪽: ${n}점">★</button>`).join('')}</div>
     <div class="scenes">${f.scenes.map((v,j)=>`<div class="scene-row"><textarea class="scene" rows="1" data-scene="${j}">${esc(v)}</textarea></div>`).join('')}</div>
     
     <div class="film-actions"><button class="text-btn delete-film" data-delete-film>영화 삭제</button></div>
@@ -208,7 +208,7 @@ function render(){
    timer=setTimeout(()=>searchMovies(q,box,f.id),320);
   });
   search.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(timer);searchMovies(search.value.trim(),box,f.id)}});
-  el.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',()=>{f.rating=+b.dataset.star;save()}));
+  el.querySelectorAll('[data-star]').forEach(b=>b.addEventListener('click',e=>{const r=b.getBoundingClientRect();const half=(e.clientX-r.left)<r.width/2;f.rating=+b.dataset.star-(half?0.5:0);save()}));
   el.querySelectorAll('.scene').forEach(t=>{
    const resize=()=>{t.style.height='auto';t.style.height=Math.min(Math.max(t.scrollHeight,23),90)+'px'};
    t.addEventListener('input',()=>{f.scenes[+t.dataset.scene]=t.value;localStorage.setItem(DATA_KEY,JSON.stringify(films));resize()});resize();
@@ -252,7 +252,7 @@ document.getElementById('download').addEventListener('click',async()=>{
   const source=document.getElementById('capture');
   exportNode=source.cloneNode(true);
   exportNode.id='capture-export';
-  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:760px;max-width:none;margin:0;padding:24px 22px 18px;background:#101010;';
+  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:650px;max-width:none;margin:0;padding:24px 20px 18px;background:#101010;';
   exportNode.querySelectorAll('.search-wrap,.film-actions,.scene-actions').forEach(n=>n.remove());
   const p=exportNode.querySelector('#profile');
   p.querySelector('#profile-file').remove();
