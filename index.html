@@ -21,6 +21,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 .film-no{font-size:10px;color:#777;padding-top:5px;letter-spacing:.06em}
 .poster{width:76px;height:114px;background:#242424;object-fit:cover;display:flex;align-items:center;justify-content:center;color:#666;font-size:9px;letter-spacing:.1em;text-align:center}
 .poster img{width:100%;height:100%;object-fit:cover;display:block}
+.poster[data-poster-error]::after{content:attr(data-poster-error);font-size:9px;color:#888;text-align:center;padding:5px}
 .film-main{min-width:0;max-width:490px;padding-top:2px}
 .search-wrap{position:relative;max-width:390px}
 .search{width:100%;height:28px;padding:3px 22px 5px 0;border:0;border-bottom:1px solid #444;background:transparent;color:var(--ink);font-size:14px;font-weight:650;outline:0}
@@ -130,27 +131,21 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
  <button class="btn ghost" id="download">DOWNLOAD PNG</button>
  <button class="btn ghost" id="print">PRINT / PDF</button>
 </div>
-<details class="settings">
- <summary>TMDB API KEY / SETTINGS</summary>
- <div class="settings-inner">
-  <input id="api-key" type="password" autocomplete="off" placeholder="TMDB API Key (v3 auth)">
-  <button class="btn ghost" id="save-key">SAVE KEY</button>
- </div>
- <p class="hint">영화 검색을 위해 TMDB API 키가 필요합니다. <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener" style="color:#bbb">TMDB 계정 설정</a>에서 발급한 API Key (v3 auth)를 입력해 주세요. 키와 기록은 현재 브라우저에 저장됩니다. 공용 PC에서는 사용하지 마세요. 공개 저장소에 API 키를 직접 넣지 마세요.</p>
- <p class="hint">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
-</details>
+<p class="hint" style="margin-top:15px">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
 </section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-const DATA_KEY='select10scene-v2',API_KEY='select10scene-tmdb-key',PROFILE_KEY='selectmyscene-profile-v1';
-const validPoster=(url)=>typeof url==='string' && /^https:\/\/image\.tmdb\.org\/t\/p\/w(?:185|342|500)\/[a-zA-Z0-9_./-]+$/.test(url);
+const DATA_KEY='select10scene-v2',PROFILE_KEY='selectmyscene-profile-v1';
+// After deploying your Cloudflare Worker, paste its public URL below (no trailing slash).
+const WORKER_URL='https://REPLACE_WITH_YOUR_WORKER.workers.dev';
+const validPoster=(url)=>typeof url==='string' && /^https:\/\/image\.tmdb\.org\/t\/p\/(?:w185|w342|w500|original)\/[a-zA-Z0-9_.-]+$/.test(url);
 const validProfile=(url)=>typeof url==='string' && /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(url) && url.length<1500000;
-let apiKey=localStorage.getItem(API_KEY)||'';
+
 let films;
 try{films=JSON.parse(localStorage.getItem(DATA_KEY)||'null')}catch(e){films=null}
 if(!Array.isArray(films)) films=[newFilm(),newFilm(),newFilm()];
 films=films.slice(0,10).filter(f=>f && typeof f==='object').map(f=>({...f,scenes:[String((Array.isArray(f.scenes)?f.scenes: [''])[0]||'').slice(0,2500)],rating:Math.max(0,Math.min(5,Number(f.rating)||0)),movie:f.movie&&typeof f.movie==='object'?{...f.movie,poster:validPoster(f.movie.poster)?f.movie.poster:''}:null}));
-document.getElementById('api-key').value=apiKey;
+
 const root=document.getElementById('films');
 let profile={name:'',note:'',photo:''};
 try{profile={...profile,...JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}')}}catch(e){}
@@ -190,7 +185,7 @@ function render(){
  root.innerHTML='';
  films.forEach((f,i)=>{
   const movie=f.movie;
-  const poster=validPoster(movie?.poster)?`<img src="${esc(movie.poster)}" crossorigin="anonymous" referrerpolicy="no-referrer" alt="">`:'<span>POSTER</span>';
+  const poster=validPoster(movie?.poster)?`<img src="${esc(movie.poster)}" alt="영화 포스터" onerror="this.style.display='none';this.parentElement.dataset.posterError='포스터 로딩 실패'">`:'<span>POSTER</span>';
   const el=document.createElement('article');el.className='film';el.dataset.id=f.id;
   el.innerHTML=`<div class="poster">${poster}</div>
    <div class="film-main">
@@ -225,14 +220,14 @@ function render(){
 
 }
 async function searchMovies(q,box,id){
- if(!apiKey){box.hidden=false;box.innerHTML='<div class="result"><span style="font-size:11px;color:#aaa">먼저 TMDB API KEY를 설정해 주세요.</span></div>';return}
+ if(WORKER_URL.includes('REPLACE_WITH_YOUR_WORKER')){box.hidden=false;box.textContent='관리자가 영화 검색 서버를 연결해야 합니다.';return}
  box.hidden=false;box.innerHTML='<div class="result"><span style="font-size:11px;color:#aaa">검색 중…</span></div>';
  try{
-  const u=`https://api.themoviedb.org/3/search/movie?api_key=${encodeURIComponent(apiKey)}&language=ko-KR&query=${encodeURIComponent(q)}&include_adult=false`;
+  const u=`${WORKER_URL}/search?query=${encodeURIComponent(q)}`;
   const r=await fetch(u,{referrerPolicy:'no-referrer'});if(!r.ok)throw Error('검색 오류: API 키를 확인해 주세요.');
   const data=await r.json();box.innerHTML='';
   (data.results||[]).slice(0,12).forEach(m=>{
-   const p=typeof m.poster_path==='string' && /^\/[a-zA-Z0-9_./-]+$/.test(m.poster_path)?'https://image.tmdb.org/t/p/w185'+m.poster_path:'';
+   const p=typeof m.poster_path==='string' && /^\/[a-zA-Z0-9_.-]+$/.test(m.poster_path)?'https://image.tmdb.org/t/p/w500'+m.poster_path:'';
    const b=document.createElement('button');b.className='result';
    b.innerHTML=`${p?`<img src="${p}" alt="">`:'<span class="no-poster">NO POSTER</span>'}<span><b>${esc(m.title||m.original_title||'제목 없음')}</b><small>${(m.release_date||'').slice(0,4)||'연도 미상'}</small></span>`;
    b.addEventListener('click',()=>chooseMovie(id,m,p));box.appendChild(b);
@@ -243,13 +238,13 @@ async function searchMovies(q,box,id){
 async function chooseMovie(id,m,poster){
  const f=films.find(x=>x.id===id);if(!f)return;
  let director='';
- try{const r=await fetch(`https://api.themoviedb.org/3/movie/${encodeURIComponent(m.id)}/credits?api_key=${encodeURIComponent(apiKey)}&language=ko-KR`,{referrerPolicy:'no-referrer'});if(r.ok){const d=await r.json();director=(d.crew||[]).filter(x=>x.job==='Director').map(x=>x.name).join(', ')}}
+ try{const r=await fetch(`${WORKER_URL}/credits?id=${encodeURIComponent(m.id)}`,{referrerPolicy:'no-referrer'});if(r.ok){const d=await r.json();director=(d.crew||[]).filter(x=>x.job==='Director').map(x=>x.name).join(', ')}}
  catch(e){}
  f.movie={id:m.id,title:m.title||m.original_title||'',year:(m.release_date||'').slice(0,4),director,poster};
  save();
 }
 document.getElementById('add-film').addEventListener('click',()=>{if(films.length>=10){alert('영화는 최대 10편까지 추가할 수 있어요.');return}films.push(newFilm());save()});
-document.getElementById('save-key').addEventListener('click',()=>{apiKey=document.getElementById('api-key').value.trim();localStorage.setItem(API_KEY,apiKey);alert('이 브라우저에 저장했습니다.')});
+
 document.getElementById('print').addEventListener('click',()=>window.print());
 document.getElementById('download').addEventListener('click',async()=>{
  let exportNode;
