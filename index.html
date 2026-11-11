@@ -41,7 +41,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 .director{font-size:12px;color:#aaa;margin-top:1px;min-height:16px}
 .stars{display:flex;gap:3px;margin-top:2px}
 .star{border:0;background:none;padding:0;color:#555;font-size:15px;line-height:1;cursor:pointer}
-.star.active{color:#eee}
+.star.active{color:#f5c542}
 .scenes{margin-top:6px;display:flex;flex-direction:column;gap:5px;max-width:470px}
 .scene-row{display:flex;align-items:flex-start;gap:0}
 .scene-bullet{color:#ddd;font-size:12px;line-height:23px;flex:none}
@@ -137,7 +137,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 <script>
 const DATA_KEY='select10scene-v2',PROFILE_KEY='selectmyscene-profile-v1';
 // After deploying your Cloudflare Worker, paste its public URL below (no trailing slash).
-const WORKER_URL='https://REPLACE_WITH_YOUR_WORKER.workers.dev';
+const WORKER_URL='https://select-my-scene-api.9243617.workers.dev';
 const validPoster=(url)=>typeof url==='string' && /^https:\/\/image\.tmdb\.org\/t\/p\/(?:w185|w342|w500|original)\/[a-zA-Z0-9_.-]+$/.test(url);
 const validProfile=(url)=>typeof url==='string' && /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(url) && url.length<1500000;
 
