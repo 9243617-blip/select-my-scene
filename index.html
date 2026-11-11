@@ -68,8 +68,8 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 .archive-layout{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:35px;align-items:stretch;min-height:305px}
 .archive-films{min-width:0}
 /* The visible curator group is centered as a single unit against the full film list. */
-.profile{border-left:1px solid var(--line);padding:0 0 0 24px;min-width:0;align-self:stretch;position:relative}
-.profile-center{position:absolute;left:24px;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;min-width:0}
+.profile{border-left:1px solid var(--line);padding:0 24px;min-width:0;align-self:stretch;position:relative;box-sizing:border-box}
+.profile-center{position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;min-width:0}
 .profile-heading{font-size:10px;letter-spacing:.18em;color:#888;margin-bottom:19px;text-align:center}
 .profile-photo{display:flex;align-items:center;justify-content:center;width:94px;height:94px;border-radius:50%;overflow:hidden;background:#292929;color:#777;font-size:10px;cursor:pointer;margin:0 auto 14px}
 .profile-photo img{width:100%;height:100%;object-fit:cover}
@@ -97,7 +97,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 /* Compact, predictable export composition */
 #capture-export{box-sizing:border-box!important}
 #capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:18px;margin-top:24px;align-items:stretch!important;min-height:305px}
-#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:0 0 0 18px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:stretch!important;box-sizing:border-box!important}
+#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:0 18px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:stretch!important;box-sizing:border-box!important}
 /* Export: layout-based positioning is stable in html2canvas; no 50%/translate offsets. */
 #capture-export .profile-center{position:static!important;top:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:0!important;width:100%!important}
 #capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:19px;padding:23px 0 27px;min-height:0;align-items:start}
