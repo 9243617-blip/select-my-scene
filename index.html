@@ -81,6 +81,9 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 
 @media(max-width:520px){
  .page{width:calc(100% - 28px);padding-top:28px}
+ header{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:16px}
+ header h1{font-size:clamp(20px,6vw,29px);letter-spacing:0;white-space:nowrap;line-height:1.1}
+ header .edition{top:0;text-align:left;font-size:10px;letter-spacing:.12em;white-space:nowrap}
  .film{grid-template-columns:60px minmax(0,1fr);gap:10px;padding:11px 0 13px}
  .poster{width:60px;height:90px}
  .film-main{max-width:none}
@@ -93,9 +96,10 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 #capture-export{box-sizing:border-box!important}
 #capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:12px;margin-top:17px}
 #capture-export .profile{padding:10px 0 8px 12px}
-#capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:10px 0 11px;min-height:0;align-items:start}
+#capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:16px 0 19px;min-height:0;align-items:start}
+#capture-export .film:last-child{border-bottom:none}
 #capture-export .poster{width:70px;height:105px}
-#capture-export .film-main{max-width:none;padding-top:0}
+#capture-export .film-main{max-width:none;padding-top:0;padding-right:12px;box-sizing:border-box}
 #capture-export .movie-line{margin-top:1px;min-height:19px}
 #capture-export .director{margin-top:2px;min-height:16px}
 #capture-export .stars{margin-top:4px}
@@ -252,12 +256,20 @@ document.getElementById('add-film').addEventListener('click',()=>{if(films.lengt
 
 document.getElementById('print').addEventListener('click',()=>window.print());
 document.getElementById('download').addEventListener('click',async()=>{
+ // Open the image tab synchronously on every browser, before asynchronous rendering.
+ // This avoids popup blockers on iOS, Android, and desktop browsers.
+ const previewTab=window.open('','_blank');
+ if(previewTab){
+  previewTab.document.title='SELECT MY SCENE — PNG';
+  previewTab.document.body.style.cssText='margin:0;padding:24px;background:#101010;color:#eee;font:16px system-ui,sans-serif;text-align:center';
+  previewTab.document.body.textContent='PNG 이미지를 만드는 중입니다…';
+ }
  let exportNode;
  try{
   const source=document.getElementById('capture');
   exportNode=source.cloneNode(true);
   exportNode.id='capture-export';
-  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:570px;max-width:none;margin:0;padding:22px 18px 18px;background:#101010;';
+  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:620px;max-width:none;margin:0;padding:32px 30px 34px;background:#101010;';
   exportNode.querySelectorAll('.search-wrap,.film-actions,.scene-actions,.footer').forEach(n=>n.remove());
   const p=exportNode.querySelector('#profile');
   p.querySelector('#profile-file').remove();
@@ -318,8 +330,24 @@ document.getElementById('download').addEventListener('click',async()=>{
   await Promise.all([...exportNode.querySelectorAll('img')].map(img=>img.decode?img.decode():Promise.resolve()));
   if(typeof html2canvas!=='function')throw Error('PNG library unavailable');
   const canvas=await html2canvas(exportNode,{backgroundColor:'#101010',scale:2,useCORS:true,logging:false,windowWidth:1100,scrollX:0,scrollY:0});
-  const link=document.createElement('a');link.download='select-my-scene.png';link.href=canvas.toDataURL('image/png');link.click();
- }catch(e){console.error('PNG export:',e);alert('PNG 저장 실패: 포스터 이미지 변환에 문제가 있습니다. Cloudflare Worker의 /poster 기능을 먼저 업데이트해 주세요. ('+e.message+')')}
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG 변환 실패')),'image/png'));
+  // Navigate the already-open tab to the PNG itself, not a download or share sheet.
+  // Long-press on mobile (or right-click on desktop) to save the image.
+  const url=URL.createObjectURL(blob);
+  if(previewTab&&!previewTab.closed){
+   previewTab.location.replace(url);
+  }else{
+   // When popups are disabled, show a direct image link in the current page.
+   const old=document.getElementById('png-preview-fallback');if(old)old.remove();
+   const notice=document.createElement('div');notice.id='png-preview-fallback';
+   notice.style.cssText='position:fixed;z-index:99999;inset:auto 12px 12px;background:#252525;color:#fff;padding:16px;border:1px solid #777;font:14px system-ui,sans-serif';
+   const anchor=document.createElement('a');anchor.href=url;anchor.target='_blank';anchor.rel='noopener';anchor.textContent='PNG 이미지 새 탭에서 열기';anchor.style.cssText='color:#f5c542;text-decoration:underline';
+   const close=document.createElement('button');close.textContent='닫기';close.style.cssText='float:right;padding:4px 8px';close.onclick=()=>notice.remove();
+   notice.append(close,anchor);document.body.appendChild(notice);
+  }
+  // Retain the object URL so the image can be saved after opening the tab.
+  setTimeout(()=>URL.revokeObjectURL(url),30*60*1000);
+ }catch(e){console.error('PNG export:',e);if(previewTab&&!previewTab.closed){previewTab.document.body.textContent='PNG 생성 실패: '+e.message;}alert('PNG 저장 실패: '+e.message+' (포스터 문제라면 Cloudflare Worker의 /poster 기능을 확인해 주세요.)')}
  finally{if(exportNode)exportNode.remove()}
 });
 render();
