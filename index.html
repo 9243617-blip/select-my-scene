@@ -97,9 +97,9 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 /* Compact, predictable export composition */
 #capture-export{box-sizing:border-box!important}
 #capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:18px;margin-top:24px;align-items:stretch!important;min-height:305px}
-#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:0 0 0 18px!important}
+#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:0 0 0 18px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:stretch!important;box-sizing:border-box!important}
 /* Export: layout-based positioning is stable in html2canvas; no 50%/translate offsets. */
-#capture-export .profile-center{position:relative!important;top:auto!important;left:auto!important;right:auto!important;transform:none!important;margin-top:0}
+#capture-export .profile-center{position:static!important;top:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:0!important;width:100%!important}
 #capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:19px;padding:23px 0 27px;min-height:0;align-items:start}
 #capture-export #films > .film:last-of-type{border-bottom:0!important}
 #capture-export .poster{width:70px;height:105px}
@@ -340,17 +340,6 @@ document.getElementById('download').addEventListener('click',async()=>{
   document.body.appendChild(exportNode);
   await document.fonts.ready;
   await Promise.all([...exportNode.querySelectorAll('img')].map(img=>img.decode?img.decode():Promise.resolve()));
-  // Center the complete CURATOR block, from its heading to the end of its note,
-  // within the actual full-height vertical divider. Explicit pixel margin is
-  // deliberately used for html2canvas stability (avoids percentage transforms).
-  const exportProfile=exportNode.querySelector('#profile');
-  const exportProfileCenter=exportProfile?.querySelector('.profile-center');
-  if(exportProfile && exportProfileCenter){
-   const borderHeight=exportProfile.getBoundingClientRect().height;
-   const contentHeight=exportProfileCenter.getBoundingClientRect().height;
-   const equalSpace=Math.max(0,(borderHeight-contentHeight)/2);
-   exportProfileCenter.style.setProperty('margin-top',equalSpace+'px','important');
-  }
   if(typeof html2canvas!=='function')throw Error('PNG library unavailable');
   const canvas=await html2canvas(exportNode,{backgroundColor:'#101010',scale:2,useCORS:true,logging:false,windowWidth:1100,scrollX:0,scrollY:0});
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG 변환 실패')),'image/png'));
