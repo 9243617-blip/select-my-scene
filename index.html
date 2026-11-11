@@ -65,9 +65,9 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 .hint{font-size:10px;color:#777;line-height:1.65;margin:9px 0 0}
 .no-film{color:#777;font-size:11px;padding:18px 0}
 
-.archive-layout{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:35px;align-items:start}
+.archive-layout{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:35px;align-items:stretch}
 .archive-films{min-width:0}
-.profile{border-left:1px solid var(--line);padding:18px 0 16px 24px;min-width:0}
+.profile{border-left:1px solid var(--line);padding:18px 0 16px 24px;min-width:0;align-self:stretch}
 .profile-heading{font-size:10px;letter-spacing:.18em;color:#888;margin-bottom:19px;text-align:center}
 .profile-photo{display:flex;align-items:center;justify-content:center;width:94px;height:94px;border-radius:50%;overflow:hidden;background:#292929;color:#777;font-size:10px;cursor:pointer;margin:0 auto 14px}
 .profile-photo img{width:100%;height:100%;object-fit:cover}
@@ -82,7 +82,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 @media(max-width:520px){
  .page{width:calc(100% - 28px);padding-top:28px}
  header{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:16px}
- header h1{font-size:clamp(20px,6vw,29px);letter-spacing:0;white-space:nowrap;line-height:1.1}
+ header h1{font-size:clamp(15px,5.1vw,29px);letter-spacing:-.025em;white-space:nowrap;line-height:1.1;max-width:100%}
  header .edition{top:0;text-align:left;font-size:10px;letter-spacing:.12em;white-space:nowrap}
  .film{grid-template-columns:60px minmax(0,1fr);gap:10px;padding:11px 0 13px}
  .poster{width:60px;height:90px}
@@ -94,19 +94,20 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 
 /* Compact, predictable export composition */
 #capture-export{box-sizing:border-box!important}
-#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:12px;margin-top:17px}
-#capture-export .profile{padding:10px 0 8px 12px}
-#capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:16px 0 19px;min-height:0;align-items:start}
-#capture-export .film:last-child{border-bottom:none}
+#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:18px;margin-top:24px;align-items:stretch!important}
+#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:10px 0 8px 18px!important}
+#capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:23px 0 27px;min-height:0;align-items:start}
+#capture-export #films > .film:last-of-type{border-bottom:0!important}
 #capture-export .poster{width:70px;height:105px}
-#capture-export .film-main{max-width:none;padding-top:0;padding-right:12px;box-sizing:border-box}
+#capture-export .film-main{max-width:none;padding-top:0;padding-right:20px;box-sizing:border-box}
 #capture-export .movie-line{margin-top:1px;min-height:19px}
 #capture-export .director{margin-top:2px;min-height:16px}
 #capture-export .stars{margin-top:4px}
 #capture-export .scenes{margin-top:9px;max-width:100%;gap:0;min-height:0}
 #capture-export .scene-export{font-size:12px;line-height:1.55;color:#eee;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:0}
-#capture-export header h1{font-size:29px;white-space:nowrap}
-#capture-export header .edition{font-size:9px;letter-spacing:.10em;white-space:nowrap}
+#capture-export header{display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:flex-end!important;gap:12px!important}
+#capture-export header h1{font-size:29px!important;letter-spacing:.015em!important;white-space:nowrap!important;max-width:none!important;line-height:1!important}
+#capture-export header .edition{font-size:9px!important;letter-spacing:.10em!important;white-space:nowrap!important;text-align:right!important;top:5px!important}
 #capture-export .profile-heading{text-align:center;margin-bottom:16px}
 #capture-export .profile-photo{margin-left:auto;margin-right:auto}
 #capture-export .profile-static-name,#capture-export .profile-static-note{text-align:center}
@@ -269,7 +270,7 @@ document.getElementById('download').addEventListener('click',async()=>{
   const source=document.getElementById('capture');
   exportNode=source.cloneNode(true);
   exportNode.id='capture-export';
-  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:620px;max-width:none;margin:0;padding:32px 30px 34px;background:#101010;';
+  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:680px;max-width:none;margin:0;padding:46px 46px 28px;background:#101010;';
   exportNode.querySelectorAll('.search-wrap,.film-actions,.scene-actions,.footer').forEach(n=>n.remove());
   const p=exportNode.querySelector('#profile');
   p.querySelector('#profile-file').remove();
@@ -288,6 +289,9 @@ document.getElementById('download').addEventListener('click',async()=>{
     row.replaceWith(text);
    });
   });
+  // Hide the bottom border on the last populated film, even if empty slots follow.
+  const exportedFilms=[...exportNode.querySelectorAll('#films > .film')];
+  if(exportedFilms.length){exportedFilms[exportedFilms.length-1].style.borderBottom='none';exportedFilms[exportedFilms.length-1].style.paddingBottom='6px';}
   // Render ratings with explicit SVG shapes instead of CSS background-clip:text.
   exportNode.querySelectorAll('.film').forEach(card=>{
    const film=films.find(f=>String(f.id)===card.dataset.id);
@@ -335,7 +339,14 @@ document.getElementById('download').addEventListener('click',async()=>{
   // Long-press on mobile (or right-click on desktop) to save the image.
   const url=URL.createObjectURL(blob);
   if(previewTab&&!previewTab.closed){
-   previewTab.location.replace(url);
+   previewTab.document.body.replaceChildren();
+   previewTab.document.title='SELECT MY SCENE — PNG';
+   previewTab.document.body.style.cssText='margin:0;padding:12px;background:#101010;display:flex;justify-content:center;align-items:flex-start;min-height:100vh';
+   const previewImage=previewTab.document.createElement('img');
+   previewImage.src=url;
+   previewImage.alt='SELECT MY SCENE PNG — 길게 눌러 이미지를 저장하세요';
+   previewImage.style.cssText='display:block;width:100%;max-width:900px;height:auto;object-fit:contain;-webkit-touch-callout:default;user-select:auto;-webkit-user-select:auto';
+   previewTab.document.body.appendChild(previewImage);
   }else{
    // When popups are disabled, show a direct image link in the current page.
    const old=document.getElementById('png-preview-fallback');if(old)old.remove();
