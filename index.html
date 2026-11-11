@@ -96,9 +96,12 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 
 /* Compact, predictable export composition */
 #capture-export{box-sizing:border-box!important}
-#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:18px;margin-top:24px;align-items:stretch!important;min-height:305px}
-/* Stretch the export-only curator column into the right 46px canvas margin so its visual center is halfway between the divider and the PNG right edge. */
-#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:0 18px!important;margin-right:-46px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:stretch!important;box-sizing:border-box!important}
+/* PNG frame: extend only the curator-side column into the right outer margin.
+   Film width and divider position remain unchanged. The blue-area target ends
+   10px before the image edge, giving the curator genuinely equal left/right space. */
+#capture-export .archive-layout{width:calc(100% + 36px)!important;grid-template-columns:minmax(0,1fr) 200px!important;gap:18px;margin-top:24px;align-items:stretch!important;min-height:305px}
+/* Center the entire curator group inside the full outlined right-hand region. */
+#capture-export .profile{grid-row:auto!important;border-bottom:0!important;border-left:1px solid var(--line)!important;padding:0 18px!important;margin-right:0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-self:stretch!important;box-sizing:border-box!important}
 /* Export: layout-based positioning is stable in html2canvas; no 50%/translate offsets. */
 #capture-export .profile-center{position:static!important;top:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:0!important;width:100%!important}
 #capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:19px;padding:23px 0 27px;min-height:0;align-items:start}
