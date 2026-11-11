@@ -339,6 +339,18 @@ document.getElementById('download').addEventListener('click',async()=>{
   document.body.appendChild(exportNode);
   await document.fonts.ready;
   await Promise.all([...exportNode.querySelectorAll('img')].map(img=>img.decode?img.decode():Promise.resolve()));
+  // Center the whole curator group against the actual rendered film-list height in the PNG export.
+  const exportFilms=exportNode.querySelector('#films');
+  const exportProfile=exportNode.querySelector('#profile');
+  const exportProfileCenter=exportProfile?.querySelector('.profile-center');
+  if(exportFilms && exportProfile && exportProfileCenter){
+   exportProfile.style.height=exportFilms.offsetHeight+'px';
+   exportProfile.style.minHeight=exportFilms.offsetHeight+'px';
+   exportProfileCenter.style.transform='none';
+   const groupHeight=exportProfileCenter.offsetHeight;
+   const top=Math.max(0,Math.round((exportFilms.offsetHeight-groupHeight)/2));
+   exportProfileCenter.style.top=top+'px';
+  }
   if(typeof html2canvas!=='function')throw Error('PNG library unavailable');
   const canvas=await html2canvas(exportNode,{backgroundColor:'#101010',scale:2,useCORS:true,logging:false,windowWidth:1100,scrollX:0,scrollY:0});
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG 변환 실패')),'image/png'));
