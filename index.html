@@ -276,13 +276,50 @@ document.getElementById('download').addEventListener('click',async()=>{
     row.replaceWith(text);
    });
   });
+  // Render ratings with explicit SVG shapes instead of CSS background-clip:text.
+  exportNode.querySelectorAll('.film').forEach(card=>{
+   const film=films.find(f=>String(f.id)===card.dataset.id);
+   if(!film)return;
+   card.querySelectorAll('.star').forEach((button,index)=>{
+    const amount=Math.max(0,Math.min(1,film.rating-index));
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','19');svg.setAttribute('height','19');
+    svg.style.display='block';
+    const path='M12 1.5 15.2 8.1 22.5 9.15 17.25 14.3 18.5 21.6 12 18.15 5.5 21.6 6.75 14.3 1.5 9.15 8.8 8.1Z';
+    const gray=document.createElementNS(ns,'path');gray.setAttribute('d',path);gray.setAttribute('fill','#555');svg.appendChild(gray);
+    if(amount>0){
+     const defs=document.createElementNS(ns,'defs'),clip=document.createElementNS(ns,'clipPath');
+     const clipId='rating-clip-'+index+'-'+String(film.id).replace(/[^a-zA-Z0-9]/g,'');
+     clip.setAttribute('id',clipId);
+     const rect=document.createElementNS(ns,'rect');rect.setAttribute('width',String(24*amount));rect.setAttribute('height','24');clip.appendChild(rect);defs.appendChild(clip);svg.appendChild(defs);
+     const gold=document.createElementNS(ns,'path');gold.setAttribute('d',path);gold.setAttribute('fill','#f5c542');gold.setAttribute('clip-path','url(#'+clipId+')');svg.appendChild(gold);
+    }
+    button.replaceWith(svg);
+   });
+  });
+  // TMDB poster images need to be embedded before html2canvas runs.
+  // The Worker image endpoint is restricted to TMDB poster paths.
+  const posterImages=[...exportNode.querySelectorAll('.poster img')];
+  await Promise.all(posterImages.map(async img=>{
+   const original=img.getAttribute('src');
+   if(!validPoster(original))return;
+   const path=new URL(original).pathname.split('/').pop();
+   const response=await fetch(`${WORKER_URL}/poster?file=${encodeURIComponent(path)}`,{mode:'cors'});
+   if(!response.ok)throw new Error('Poster proxy HTTP '+response.status);
+   const blob=await response.blob();
+   if(!blob.type.startsWith('image/')||blob.size>3000000)throw new Error('Invalid poster image');
+   const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)});
+   img.src=dataUrl;
+   await img.decode();
+  }));
   document.body.appendChild(exportNode);
   await document.fonts.ready;
-  await Promise.all([...exportNode.querySelectorAll('img')].map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve()));
+  await Promise.all([...exportNode.querySelectorAll('img')].map(img=>img.decode?img.decode():Promise.resolve()));
   if(typeof html2canvas!=='function')throw Error('PNG library unavailable');
   const canvas=await html2canvas(exportNode,{backgroundColor:'#101010',scale:2,useCORS:true,logging:false,windowWidth:1100,scrollX:0,scrollY:0});
   const link=document.createElement('a');link.download='select-my-scene.png';link.href=canvas.toDataURL('image/png');link.click();
- }catch(e){alert('PNG 저장에 실패했습니다. 포스터가 모두 로드된 뒤 다시 시도해 주세요.')}
+ }catch(e){console.error('PNG export:',e);alert('PNG 저장 실패: 포스터 이미지 변환에 문제가 있습니다. Cloudflare Worker의 /poster 기능을 먼저 업데이트해 주세요. ('+e.message+')')}
  finally{if(exportNode)exportNode.remove()}
 });
 render();
