@@ -68,15 +68,15 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 .archive-layout{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:35px;align-items:start}
 .archive-films{min-width:0}
 .profile{border-left:1px solid var(--line);padding:18px 0 16px 24px;min-width:0}
-.profile-heading{font-size:10px;letter-spacing:.18em;color:#888;margin-bottom:19px}
-.profile-photo{display:flex;align-items:center;justify-content:center;width:94px;height:94px;border-radius:50%;overflow:hidden;background:#292929;color:#777;font-size:10px;cursor:pointer;margin-bottom:14px}
+.profile-heading{font-size:10px;letter-spacing:.18em;color:#888;margin-bottom:19px;text-align:center}
+.profile-photo{display:flex;align-items:center;justify-content:center;width:94px;height:94px;border-radius:50%;overflow:hidden;background:#292929;color:#777;font-size:10px;cursor:pointer;margin:0 auto 14px}
 .profile-photo img{width:100%;height:100%;object-fit:cover}
-.profile-name{width:100%;background:none;border:0;border-bottom:1px solid #444;color:#f4f4f4;padding:5px 0;font-size:15px;font-weight:650;outline:none}
-.profile-note{display:block;width:100%;min-height:88px;background:none;border:0;border-bottom:1px solid #444;color:#ccc;resize:vertical;padding:10px 0;font-size:12px;line-height:1.65;outline:none}
+.profile-name{width:100%;background:none;border:0;border-bottom:1px solid #444;color:#f4f4f4;padding:5px 0;font-size:15px;font-weight:650;outline:none;text-align:center}
+.profile-note{display:block;width:100%;min-height:88px;background:none;border:0;border-bottom:1px solid #444;color:#ccc;resize:vertical;padding:10px 0;font-size:12px;line-height:1.65;outline:none;text-align:center}
 .profile-name::placeholder,.profile-note::placeholder{color:#666}
 .profile-upload{display:inline-block;color:#999;font-size:10px;margin-top:10px;cursor:pointer}
-.profile-static-name{font-size:15px;font-weight:650;overflow-wrap:anywhere}
-.profile-static-note{font-size:12px;color:#ccc;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-top:10px}
+.profile-static-name{font-size:15px;font-weight:650;overflow-wrap:anywhere;text-align:center}
+.profile-static-note{font-size:12px;color:#ccc;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-top:10px;text-align:center}
 @media(max-width:650px){.archive-layout{grid-template-columns:minmax(0,1fr);gap:22px}.profile{grid-row:1;border-left:0;border-bottom:1px solid var(--line);padding:0 0 20px}.profile-photo{width:74px;height:74px}.profile-heading{margin-bottom:12px}}
 
 @media(max-width:520px){
@@ -91,8 +91,8 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 
 /* Compact, predictable export composition */
 #capture-export{box-sizing:border-box!important}
-#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 170px;gap:16px;margin-top:17px}
-#capture-export .profile{padding:10px 0 8px 18px}
+#capture-export .archive-layout{grid-template-columns:minmax(0,1fr) 164px;gap:12px;margin-top:17px}
+#capture-export .profile{padding:10px 0 8px 12px}
 #capture-export .film{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:10px 0 11px;min-height:0;align-items:start}
 #capture-export .poster{width:70px;height:105px}
 #capture-export .film-main{max-width:none;padding-top:0}
@@ -101,7 +101,12 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 #capture-export .stars{margin-top:4px}
 #capture-export .scenes{margin-top:9px;max-width:100%;gap:0;min-height:0}
 #capture-export .scene-export{font-size:12px;line-height:1.55;color:#eee;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:0}
-#capture-export .footer{margin-top:12px}
+#capture-export header h1{font-size:29px;white-space:nowrap}
+#capture-export header .edition{font-size:9px;letter-spacing:.10em;white-space:nowrap}
+#capture-export .profile-heading{text-align:center;margin-bottom:16px}
+#capture-export .profile-photo{margin-left:auto;margin-right:auto}
+#capture-export .profile-static-name,#capture-export .profile-static-note{text-align:center}
+#capture-export .footer{display:none}
 #capture-export .profile-photo{width:88px;height:88px}
 
 @media print{.no-print,.search-wrap,.film-actions{display:none!important}.page{width:100%;padding:10px}.film{break-inside:avoid}}
@@ -109,12 +114,12 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
 </head>
 <body>
 <main class="page" id="capture">
-<header><h1>SELECT MY SCENE</h1><div class="edition">A PERSONAL FILM ARCHIVE<br>FILMS / MOMENTS / MEMORIES</div></header>
+<header><h1>SELECT MY SCENE</h1><div class="edition">FILMS, MOMENTS, MEMORIES</div></header>
 
 <div class="archive-layout">
 <div class="archive-films"><section id="films"></section></div>
 <aside class="profile" id="profile">
- <div class="profile-heading">ABOUT THE CURATOR</div>
+ <div class="profile-heading">CURATOR</div>
  <label class="profile-photo" for="profile-file" id="profile-photo"><span>PHOTO</span></label>
  <input type="file" accept="image/png,image/jpeg,image/webp" id="profile-file" hidden>
  <input id="profile-name" class="profile-name" maxlength="45" placeholder="닉네임" aria-label="닉네임">
@@ -122,7 +127,7 @@ h1{font-size:clamp(27px,5vw,36px);font-weight:700;letter-spacing:.015em;line-hei
  <label for="profile-file" class="profile-upload">사진 선택 / 변경</label>
 </aside>
 </div>
-<footer class="footer"><span>SELECT MY SCENE</span></footer>
+
 </main>
 
 <section class="page no-print" style="padding-top:0">
@@ -252,8 +257,8 @@ document.getElementById('download').addEventListener('click',async()=>{
   const source=document.getElementById('capture');
   exportNode=source.cloneNode(true);
   exportNode.id='capture-export';
-  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:650px;max-width:none;margin:0;padding:24px 20px 18px;background:#101010;';
-  exportNode.querySelectorAll('.search-wrap,.film-actions,.scene-actions').forEach(n=>n.remove());
+  exportNode.style.cssText='position:fixed;left:0;top:0;z-index:-1;pointer-events:none;width:570px;max-width:none;margin:0;padding:22px 18px 18px;background:#101010;';
+  exportNode.querySelectorAll('.search-wrap,.film-actions,.scene-actions,.footer').forEach(n=>n.remove());
   const p=exportNode.querySelector('#profile');
   p.querySelector('#profile-file').remove();
   p.querySelector('.profile-upload').remove();
